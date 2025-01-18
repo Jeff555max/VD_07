@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -27,31 +28,20 @@ def edit_profile():
         user = User.query.filter_by(email=email).first()
         if user:
             user.username = username
-            user.password = password
+            user.password = generate_password_hash(password)
         else:
-            user = User(username=username, email=email, password=password)
+            user = User(username=username, email=email, password=generate_password_hash(password))
             db.session.add(user)
 
         db.session.commit()
         return redirect(url_for('success'))
 
-    return render_template('base.html')
+    return render_template('edit_profile.html')
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def home():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
+    return render_template('home.html')
 
-        # Обработка данных
-        print(f"Updated Profile - Name: {username}, Email: {email}, Password: {password}")
-
-        return redirect(url_for('success'))
-
-    return render_template('base.html')
-
-# Роут для подтверждения
 @app.route('/success')
 def success():
     return "Profile updated successfully!"
